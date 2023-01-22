@@ -1,0 +1,74 @@
+#N canvas 36 29 1206 824 12;
+#X obj 86 581 adc~;
+#X obj 92 638 *~;
+#X obj 75 183 osc~;
+#X obj 158 157 hsl 128 15 0.1 10 0 0 empty empty Rate -2 -8 0 10 -4032
+-1 -1 5000 1;
+#X obj 158 205 hsl 128 15 1 20 0 0 empty empty Shape -2 -8 0 10 -4032
+-1 -1 8800 1;
+#X obj 154 301 hsl 128 15 0 1 0 0 empty empty Depth -2 -8 0 10 -4032
+-1 -1 4600 1;
+#X floatatom 151 333 5 0 0 0 - - -;
+#X floatatom 105 389 5 0 0 0 - - -;
+#X obj 75 425 +~;
+#X obj 75 289 *~;
+#X obj 150 363 expr 1-$f1;
+#X obj 75 253 clip~ -1 1;
+#X obj 75 221 *~;
+#X obj 379 174 vsl 15 128 20 4000 0 0 empty empty Center_Frequency
+0 -9 0 10 -262130 -1 -1 2600 1;
+#X obj 442 177 vsl 15 128 0 127 0 0 empty empty Q 0 -9 0 10 -262130
+-1 -1 200 1;
+#X obj 243 563 bp~ 200 10;
+#X floatatom 379 312 5 0 0 0 - - -;
+#X floatatom 442 313 5 0 0 0 - - -;
+#X obj 580 601 sig~;
+#X text 620 569 center frequency;
+#X text 671 600 q;
+#X floatatom 580 570 5 0 0 0 - - -;
+#X floatatom 627 601 5 0 0 0 - - -;
+#X obj 547 710 env~ 8192;
+#X floatatom 547 739 5 0 0 0 - - -;
+#X obj 547 663 vcf~ 1, f 10;
+#X text 629 663 optional argument to initialize q;
+#X obj 642 713 env~ 8192;
+#X floatatom 642 740 5 0 0 0 - - -;
+#X text 544 778 (bandpass);
+#X text 651 783 (lowpass);
+#X text 544 761 real output;
+#X text 640 764 imaginary output;
+#X obj 80 695 output~;
+#X text 34 5 Brian Tice Tremolo Prototype Tremolo inspired by: guitarextended.wordpress.com
+Testing different bandpass filters bp~ or vcf~ or biquad~;
+#X obj 928 563 biquad~;
+#X connect 0 0 1 0;
+#X connect 0 1 1 0;
+#X connect 1 0 33 0;
+#X connect 1 0 33 1;
+#X connect 2 0 12 0;
+#X connect 3 0 2 0;
+#X connect 4 0 12 1;
+#X connect 5 0 9 1;
+#X connect 5 0 6 0;
+#X connect 5 0 10 0;
+#X connect 7 0 8 1;
+#X connect 8 0 15 0;
+#X connect 8 0 25 0;
+#X connect 9 0 8 0;
+#X connect 10 0 7 0;
+#X connect 11 0 9 0;
+#X connect 12 0 11 0;
+#X connect 13 0 15 1;
+#X connect 13 0 16 0;
+#X connect 13 0 21 0;
+#X connect 14 0 15 2;
+#X connect 14 0 17 0;
+#X connect 14 0 22 0;
+#X connect 18 0 25 1;
+#X connect 21 0 18 0;
+#X connect 22 0 25 2;
+#X connect 23 0 24 0;
+#X connect 25 0 23 0;
+#X connect 25 0 1 1;
+#X connect 25 1 27 0;
+#X connect 27 0 28 0;
