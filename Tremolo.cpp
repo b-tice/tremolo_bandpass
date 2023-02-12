@@ -13,7 +13,7 @@
 //              While the effects aren't utilized, this code has functions for the rotary encoder, 
 //              potentiometers and LED's that are useful.
 //              
-//              This protoype apploes the built in Tremolo function available in daisysp
+//              This protoype applies the built in Tremolo function available in daisysp
 //
 //              It also evaluates two types of bandpass filters:
 //
@@ -219,6 +219,7 @@ void GetBandPassSample(float &outl, float &outr, float inl, float inr)
 void GetTremoloSoapSample(float &outl, float &outr, float inl, float inr) 
 {
 
+    // This is the mapping of variables from the original example code to this code:
     /*  float in_0 = 0.0;       // input            x0
         float din_1 = 0.0;      // delayed input    x1
         float din_2 = 0.0;      // delayed input    x2
