@@ -65,17 +65,14 @@ int                                              mode = SAB;
 
 // for Bandpass derived from Second Order All Pass Filter
 // note, x_n and y_n's are from difference eqn.
-float soap_cutoff =     400.0;
-float bw =              50.0;
-float in_0 =            0.0;          // input            x0
-float din_1 =           0.0;          // delayed input    x1
-float din_2 =           0.0;          // delayed input    x2
-float dout_1 =          0.0;          // delayed output   y1
-float dout_2 =          0.0;          // delayed output   y2
-float all_output =      0.0;          // all pass output  y0
-float d;
-float tf;           // tangent bandwidth   
-float c;            // coefficient     
+float soap_center_freq =        400.0;
+float soap_bandwidth =          50.0;
+float in_0 =                    0.0;          // input            x0
+float din_1 =                   0.0;          // delayed input    x1
+float din_2 =                   0.0;          // delayed input    x2
+float dout_1 =                  0.0;          // delayed output   y1
+float dout_2 =                  0.0;          // delayed output   y2
+double all_output =              0.0;          // all pass output  y0
 float sr;
 
 
@@ -129,7 +126,7 @@ int main(void)
     pod.Init();
     pod.SetAudioBlockSize(4);
     sample_rate = pod.AudioSampleRate();
-    sr = sample_rate;
+    sr = sample_rate;                       // used for soap coefficient calculations
     trem.Init(sample_rate);
     filt.Init(sample_rate);
     tone.Init(sample_rate);
@@ -168,8 +165,8 @@ void UpdateKnobs(float &k1, float &k2)
         case BNP:
             filt.SetFreq(k1*3000);
         case SAB:
-            soap_cutoff = (k1*3000);
-            bw = (k2*100.0);
+            soap_center_freq = (k1*1000);
+            soap_bandwidth = (k2*100.0);
     }
 }
 
@@ -228,16 +225,15 @@ void GetTremoloSoapSample(float &outl, float &outr, float inl, float inr)
         float all_output = 0.0; // all pass output  y0 */
 
     // recalculate the coefficients, later move this to a lookup table
-    float d = -cos(2.0 * PI * (soap_cutoff/sr));
-    float tf = tan(PI * (bw/sr));                     // tangent bandwidth   
-    float c = (tf - 1.0)/(tf + 1.0);                  // coefficient     
+    double d = -cos(2.0 * PI * (soap_center_freq/sr));
+    double tf = tan(PI * (soap_bandwidth/sr));                     // tangent bandwidth   
+    double c = (tf - 1.0)/(tf + 1.0);                              // coefficient     
 
     float orig_ileft = inl;
     
     // *******
     // Add in the tremolo
     inl = trem.Process(inl);
-    //outr = trem.Process(inr);
     inr = inl;
     // *******
 
@@ -250,11 +246,11 @@ void GetTremoloSoapSample(float &outl, float &outr, float inl, float inr)
     din_1 = in_0;
     dout_2 = dout_1;
     dout_1 = all_output;
-    outl = (in_0 + all_output * -1.0) * 0.5;    // make factor -1.0 to create a bandpass
+    outl = (in_0 + all_output * -1.0) * 0.5;            // make factor -1.0 to create a bandpass
 
-    outl = (outl + 0.1*orig_ileft) / 2;     // blending dry signal with tremolo+bandpass signal
+    outl = (float)(outl + 0.1*orig_ileft) / 2;          // blending dry signal with tremolo+bandpass signal
 
-    outr = outl;
+    outr = (float)outl;
 
 }
 
