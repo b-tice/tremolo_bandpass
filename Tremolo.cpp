@@ -1,7 +1,8 @@
 // Project: Tremolo-Bandpass Project
 //
 // Written by: Brian Tice, 2/12/2023
-//
+// Last Modified: 3/28/2023
+
 // Description: This file contains protoype code for a Tremolo-Bandpass 
 //              multi effect on the Daisy platform. The idea is to apply 
 //              a tremolo effect to only a selected frequency band, notated
