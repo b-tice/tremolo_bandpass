@@ -29,12 +29,14 @@
 //                      2) Fine tune parameters for filters and tremolo. 
 //                      3) Write a library function for the Bandpass Derived from a
 //                         a Second Order All Pass and send to Electro Smith so they 
-//                         can include it in the open source libraries 
+//                         can evaluate it for inclusion in the open source libraries [DONE]
 //                      4) Documentation of parameters 
 
 #include "daisysp.h"            // Open Source DSP Library
 #include "daisy_pod.h"          // libDaisy, hardware abstraction library for
                                 // the daisy platform
+
+#include "soap.h"
 
 #define PI 3.141592653589793
 
@@ -60,21 +62,8 @@ static DaisyPod pod;
 static Tremolo                                   trem;
 static Svf                                       filt;
 static Tone                                      tone;
-static Parameter                                 deltime, cutoffParam, crushrate;
+static Soap                                      soap;
 int                                              mode = SAB;
-
-// for Bandpass derived from Second Order All Pass Filter
-// note, x_n and y_n's are from difference eqn.
-float soap_center_freq =        400.0;
-float soap_bandwidth =          50.0;
-float in_0 =                    0.0;          // input            x0
-float din_1 =                   0.0;          // delayed input    x1
-float din_2 =                   0.0;          // delayed input    x2
-float dout_1 =                  0.0;          // delayed output   y1
-float dout_2 =                  0.0;          // delayed output   y2
-double all_output =              0.0;          // all pass output  y0
-float sr;
-
 
 //Helper functions
 void Controls();
@@ -122,20 +111,17 @@ int main(void)
     // initialize pod hardware and oscillator daisysp module
     float sample_rate;
 
-    //Inits and sample rate
+    // Inits and sample rate
     pod.Init();
     pod.SetAudioBlockSize(4);
     sample_rate = pod.AudioSampleRate();
-    sr = sample_rate;                       // used for soap coefficient calculations
+
     trem.Init(sample_rate);
     filt.Init(sample_rate);
     tone.Init(sample_rate);
+    soap.Init(sample_rate); 
 
-    //set parameters
-    cutoffParam.Init(pod.knob1, 500, 20000, cutoffParam.LOGARITHMIC);
-    crushrate.Init(pod.knob2, 1, 50, crushrate.LOGARITHMIC);
-
-    //tremolo parameters
+    // tremolo parameters
     trem.SetFreq(2);
     trem.SetDepth(0.75);
 
@@ -143,6 +129,10 @@ int main(void)
     filt.SetFreq(300.0);
     filt.SetRes(0.85);
     filt.SetDrive(0.8);
+
+    // Soap filter settings
+    soap.SetCenterFreq(400.0);
+    soap.SetFilterBandwidth(50.0);
 
     // start callback
     pod.StartAdc();
@@ -164,9 +154,9 @@ void UpdateKnobs(float &k1, float &k2)
             trem.SetDepth(k2);
         case BNP:
             filt.SetFreq(k1*3000);
-        case SAB:
-            soap_center_freq = (k1*1000);
-            soap_bandwidth = (k2*100.0);
+        case SAB:         
+            soap.SetCenterFreq(k1*1000.0);           
+            soap.SetFilterBandwidth(k2*100.0);
     }
 }
 
@@ -214,44 +204,19 @@ void GetBandPassSample(float &outl, float &outr, float inl, float inr)
 }
 
 void GetTremoloSoapSample(float &outl, float &outr, float inl, float inr) 
-{
-
-    // This is the mapping of variables from the original example code to this code:
-    /*  float in_0 = 0.0;       // input            x0
-        float din_1 = 0.0;      // delayed input    x1
-        float din_2 = 0.0;      // delayed input    x2
-        float dout_1 = 0.0;     // delayed output   y1
-        float dout_2 = 0.0;     // delayed output   y2
-        float all_output = 0.0; // all pass output  y0 */
-
-    // recalculate the coefficients, later move this to a lookup table
-    double d = -cos(2.0 * PI * (soap_center_freq/sr));
-    double tf = tan(PI * (soap_bandwidth/sr));                     // tangent bandwidth   
-    double c = (tf - 1.0)/(tf + 1.0);                              // coefficient     
-
+{   
     float orig_ileft = inl;
-    
-    // *******
+      
     // Add in the tremolo
     inl = trem.Process(inl);
-    inr = inl;
-    // *******
 
-    in_0 = inl;   
+    // Add in the Soap Bandpass
+    outl = soap.Process(inl);
     
-    all_output = -c*in_0 + (d - d*c)*din_1 + din_2 - (d - d*c)*dout_1 + c*dout_2;
-
-    // move samples in delay for next sample
-    din_2 = din_1;
-    din_1 = in_0;
-    dout_2 = dout_1;
-    dout_1 = all_output;
-    outl = (in_0 + all_output * -1.0) * 0.5;            // make factor -1.0 to create a bandpass
-
-    outl = (float)(outl + 0.1*orig_ileft) / 2;          // blending dry signal with tremolo+bandpass signal
+    // blending dry signal with tremolo+bandpass signal
+    outl = (float)(outl + 0.1*orig_ileft) / 2;          
 
     outr = (float)outl;
-
 }
 
 
