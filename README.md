@@ -15,7 +15,7 @@ Tremolo Mode. Used to dial in the tremolo rate with Pot 1 and the tremolo depth 
 SVF mode. Used to evaluate the svf filter. Not used in the Tremolo + Bandpass currently.
 
 
-Theory of the Second Order All Pass filter is here: 
+Theory of the Second Order All Pass filter is here, written by Tom Erbe: 
 
 http://synthnotes.ucsd.edu/wp4/index.php/2019/11/09/second-order-allpass-filter/
 
